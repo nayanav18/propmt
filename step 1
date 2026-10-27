@@ -1,0 +1,618 @@
+# ENTERPRISE ANALYTICS AI — STEP 1
+## Secure Chatbot Foundation + Existing Google Cloud Connection Verification
+
+### 1. Objective
+
+Build the first working milestone of my Enterprise Analytics AI application from scratch, with a polished UI, reliable conversation persistence, clean architecture, and secure handling of company data.
+
+This is Step 1 of a larger application. Build a strong foundation that can later support intent classification, RAG, grounded analytics, persona-based access, dynamic dashboards, a Power BI-style Builder, and dashboard sharing.
+
+Do not build all future features now. Implement the complete scope described in this prompt and leave clean integration points for later milestones.
+
+Do not ask unnecessary clarification questions. Inspect the existing project and its configuration before making changes. Preserve valid existing settings and connections.
+
+Deliver a complete, runnable project, not disconnected code snippets.
+
+---
+
+### 2. Technology stack
+
+Use only the following primary technologies:
+
+**Frontend**
+- React
+- Vite
+- JavaScript
+- CSS
+
+**Backend**
+- Python 3.12
+- FastAPI
+- Uvicorn
+- Pydantic
+- SQLite for application conversation persistence
+
+**Google Cloud**
+- Google Cloud BigQuery client
+- Google Cloud authentication libraries
+- Vertex AI integration point, ready for a later AI milestone
+
+Do not use PHP.
+
+Do not use Streamlit.
+
+Do not introduce unnecessary frameworks, microservices, databases, or dependencies.
+
+Do not change the installed Python or Node versions.
+
+Keep the code readable, modular, easy to debug, and straightforward for a developer to maintain.
+
+---
+
+### 3. Existing Google Cloud configuration
+
+Use the following existing non-secret configuration values:
+
+```env
+GCP_PROJECT_ID=vf-grp-gbissdbx-dev-1
+GCP_LOCATION=us-central1
+
+BIGQUERY_DATASET=KarthikRudrapati
+BIGQUERY_LOCATION=US
+
+VERTEX_AI_MODEL=gemini-2.5-flash-lite
+VERTEX_AI_TEMPERATURE=0.2
+VERTEX_AI_MAX_TOKENS=2048
+```
+
+These are existing project configuration values, not proof that authentication or access is currently working.
+
+Before changing any existing files, inspect the project configuration and determine where these settings are currently defined.
+
+Preserve valid existing configuration.
+
+Do not invent project IDs, dataset names, table names, credentials, or service-account details.
+
+Do not replace the existing BigQuery dataset with a newly invented dataset.
+
+Do not overwrite an existing `.env` file.
+
+If a configuration value is genuinely unavailable, use an environment-variable placeholder and document it.
+
+---
+
+### 4. Mandatory company-data security requirements
+
+Company data must be treated as confidential.
+
+#### 4.1 No PHP or unnecessary external services
+
+Do not use PHP or PHP-based backend components.
+
+Do not introduce third-party analytics services, external logging services, public data-upload services, or unnecessary telemetry.
+
+Do not send company data to an external provider unless that provider is explicitly part of the configured and approved application architecture.
+
+#### 4.2 Secrets
+
+Never hard-code or commit:
+
+- Passwords
+- Google service-account private keys
+- Service-account JSON credentials
+- API keys
+- JWT signing secrets
+- OAuth client secrets
+- Access tokens
+- Refresh tokens
+- Database passwords
+- SMTP passwords
+
+Use environment variables and Google Cloud Secret Manager where appropriate.
+
+Use Google Cloud Application Default Credentials when available.
+
+Do not put backend secrets in React code, `VITE_*` variables, browser storage, frontend source maps, or API responses.
+
+Never print secret values in logs, terminal output, error messages, or diagnostic reports.
+
+Do not include real secrets in the README, generated files, prompts, screenshots, or Git commits.
+
+Create a `.env.example` containing placeholders only.
+
+Ensure `.env`, credential files, local databases containing confidential data, and generated logs are excluded from Git.
+
+#### 4.3 Authentication and authorization
+
+This milestone does not need to implement the complete enterprise login system.
+
+However, establish a backend architecture that can later integrate secure authentication.
+
+Do not expose company-data endpoints publicly.
+
+For local development, use an explicit development configuration. Do not treat a development bypass as production authentication.
+
+Do not assume that a user's selected persona grants access to data. Future authorization must be enforced on the backend.
+
+#### 4.4 BigQuery permissions
+
+Use read-only access for ordinary analytics.
+
+Do not request broad administrative permissions when read-only dataset access is sufficient.
+
+Do not create, update, delete, or modify company tables.
+
+Do not run arbitrary AI-generated SQL in this milestone.
+
+Use parameterized queries where applicable.
+
+Allow only the metadata operations needed to verify connectivity.
+
+#### 4.5 Data minimization
+
+The connection diagnostic must not retrieve or print actual business records.
+
+Do not log SQL query results containing company data.
+
+Do not log conversation contents unnecessarily.
+
+Do not send BigQuery rows to Gemini in this milestone.
+
+Do not send company data to any AI model yet.
+
+Do not include data samples, customer information, phone numbers, email addresses, or other sensitive fields in diagnostic responses.
+
+#### 4.6 Errors and logging
+
+Use structured application logs.
+
+Log operational details such as request IDs, error categories, and execution status without exposing confidential data.
+
+Return generic, useful errors to the frontend.
+
+Keep detailed internal exceptions in protected server logs, with secrets and sensitive data redacted.
+
+Never return Python stack traces, environment variables, credentials, raw SQL results, or internal filesystem paths to the browser.
+
+#### 4.7 Network and browser security
+
+Configure CORS for the intended frontend origin rather than allowing every origin in production.
+
+Do not enable wildcard credentialed CORS.
+
+Keep the backend API separate from frontend source code.
+
+Use HTTPS in deployed environments.
+
+Use appropriate secure cookie/session settings when authentication is introduced.
+
+Do not store passwords or access tokens in localStorage.
+
+Add request validation and reasonable input-size limits.
+
+---
+
+### 5. UI design
+
+Create a polished, professional enterprise chatbot interface.
+
+Use this established color palette:
+
+```css
+:root {
+  --bg-main: #050a12;
+  --bg-sidebar: #071321;
+  --bg-header: #0b101c;
+  --bg-section: #0d1626;
+  --bg-card: #1b263c;
+  --bg-card-dark: #101a2d;
+  --bg-card-hover: #202d46;
+
+  --vodafone-red: #e60000;
+  --vodafone-red-bright: #ff0018;
+  --vodafone-red-dark: #8f0012;
+  --magenta: #d50072;
+  --purple: #9138da;
+
+  --cyan: #00d8ff;
+  --green: #28e98c;
+  --orange: #ff8a1f;
+  --yellow: #ffbe45;
+
+  --text-primary: #ffffff;
+  --text-secondary: #8ba8d1;
+  --text-muted: #516c91;
+  --text-disabled: #344967;
+}
+```
+
+Design requirements:
+
+- Dark navy background.
+- Red-to-magenta-to-purple accent gradients.
+- Modern typography and clear spacing.
+- Attractive sidebar.
+- Professional chat bubbles.
+- Distinct user and assistant messages.
+- Clear message input and send button.
+- Loading indicator.
+- Empty state and welcome screen.
+- Suggested questions.
+- New Chat action.
+- Conversation history.
+- Responsive layout.
+- Accessible controls and keyboard navigation.
+- Clear error and retry states.
+- No unnecessary animation that harms usability.
+- Compact layout that fits desktop screens.
+
+Do not use a generic unstyled chat template.
+
+The UI should feel like a finished enterprise product, even though its analytics capabilities will be developed incrementally.
+
+Sidebar entries may include Chat, History, Datasets, Dashboards, Pipeline, Builder, and Settings. Mark features not implemented in Step 1 as coming soon or disable them clearly.
+
+Do not make unimplemented controls appear functional.
+
+---
+
+### 6. Chat functionality
+
+Implement a basic chat workflow.
+
+Example messages:
+
+- Hello
+- What can you do?
+- Explain what an analytics assistant does.
+- Thank you.
+
+The first version may use a small, clearly labelled deterministic development responder for basic conversational messages.
+
+Do not claim this responder is Gemini or a production AI model.
+
+Do not generate fake business analytics answers.
+
+Do not fabricate numerical results.
+
+Do not create charts automatically.
+
+Do not implement RAG or AI-generated SQL yet.
+
+Create clean interfaces so the responder can later be replaced by an intent router and AI service without rewriting the frontend.
+
+The backend response should include:
+
+- `conversation_id`
+- `reply`
+- `intent`
+- Stable message identifier where appropriate
+
+Validate the request and return a structured response.
+
+---
+
+### 7. Conversation persistence
+
+SQLite must be the source of truth for chat history.
+
+Create database tables for conversations and messages.
+
+Conversations must include:
+
+- ID
+- Title
+- Created timestamp
+- Updated timestamp
+
+Messages must include:
+
+- ID
+- Conversation ID
+- Role
+- Content
+- Intent
+- Created timestamp
+
+Requirements:
+
+1. Creating a new chat generates a unique conversation ID.
+2. Every user message is saved.
+3. Every assistant response is saved.
+4. The title is generated from the first user message.
+5. Existing conversations can be reopened.
+6. Conversation history survives browser refresh.
+7. Conversation history survives backend restart.
+8. New Chat creates a separate conversation.
+9. Conversations can be deleted.
+10. Deleting a conversation deletes its messages.
+11. History is ordered by most recently updated.
+12. Invalid IDs return appropriate HTTP errors.
+13. Use parameterized SQL and database transactions.
+14. Do not store history only in React state.
+
+Do not log full conversation contents by default.
+
+For a local development database, ensure the database file is excluded from Git if it may contain confidential information.
+
+---
+
+### 8. Required API endpoints
+
+Implement:
+
+```text
+GET    /health
+
+POST   /api/chat
+
+GET    /api/conversations
+
+GET    /api/conversations/{conversation_id}
+
+DELETE /api/conversations/{conversation_id}
+
+GET    /api/system/bigquery-status
+```
+
+The health endpoint should report application health without exposing configuration secrets.
+
+The BigQuery status endpoint must be protected appropriately in any shared or deployed environment.
+
+The endpoint must never return credentials, environment-variable values, customer data, or actual query results.
+
+Use Pydantic request and response models.
+
+Return appropriate HTTP status codes.
+
+Use structured errors, for example:
+
+```json
+{
+  "error": true,
+  "code": "CONNECTION_UNAVAILABLE",
+  "message": "The data connection could not be verified."
+}
+```
+
+Do not expose raw exception details to the frontend.
+
+---
+
+### 9. BigQuery connection verification
+
+BigQuery integration is required for this milestone, but only for connection verification and safe metadata discovery.
+
+Implement a separate backend service for BigQuery.
+
+The service must:
+
+1. Load configuration from environment variables.
+2. Initialize the Google Cloud BigQuery client using Application Default Credentials.
+3. Verify authentication and access.
+4. Check access to the configured project and dataset.
+5. Perform a harmless, read-only metadata request.
+6. Avoid retrieving actual business rows.
+7. Return a sanitized success/failure result.
+8. Distinguish authentication failure, permission denial, missing dataset, and general connection failure where possible.
+9. Never print credentials or environment-variable values.
+10. Never silently substitute mock data when the connection fails.
+
+The diagnostic response should contain only safe information, such as:
+
+- Connection status
+- Configured project identifier
+- Configured dataset identifier
+- Metadata-access status
+- Sanitized error category
+
+Do not expose sensitive table metadata publicly.
+
+The UI should display the status only to an appropriately authorized user.
+
+Do not run the diagnostic repeatedly on every chat message. Use a deliberate check or a sensible bounded check.
+
+Do not execute destructive SQL.
+
+Do not generate or execute AI-generated SQL.
+
+If Google Cloud authentication is unavailable in the current environment, the app must still start and the chatbot must remain usable. Display BigQuery as not connected and explain the safe next steps.
+
+Do not claim the connection succeeded unless a real metadata request succeeds.
+
+---
+
+### 10. Vertex AI configuration
+
+Keep the following configuration ready for a later milestone:
+
+```env
+VERTEX_AI_MODEL=gemini-2.5-flash-lite
+VERTEX_AI_TEMPERATURE=0.2
+VERTEX_AI_MAX_TOKENS=2048
+```
+
+Do not call Vertex AI for this milestone.
+
+Do not send messages, dataset metadata, company records, or conversation history to Gemini yet.
+
+Create a modular service boundary for future AI integration, but avoid adding unnecessary AI dependencies until needed.
+
+---
+
+### 11. Frontend/backend integration
+
+Use a centralized frontend API service.
+
+Configure the Vite proxy to forward `/api` requests to FastAPI.
+
+Do not hard-code backend URLs throughout React components.
+
+The frontend must:
+
+- Load conversation history from the backend.
+- Open existing conversations.
+- Create new conversations.
+- Send messages to the correct conversation.
+- Display messages returned by the backend.
+- Update history after messages are sent.
+- Restore the active conversation after refresh where appropriate.
+- Show loading and error states.
+- Prevent duplicate submissions.
+- Handle network failures.
+- Avoid exposing backend configuration.
+
+Use React state appropriately, but treat the backend database as the persistent source of truth.
+
+---
+
+### 12. Suggested project structure
+
+```text
+enterprise-analytics-ai/
+├── backend/
+│   ├── app/
+│   │   ├── main.py
+│   │   ├── routes/
+│   │   │   ├── chat.py
+│   │   │   ├── conversations.py
+│   │   │   └── system.py
+│   │   ├── services/
+│   │   │   ├── database.py
+│   │   │   ├── chat_service.py
+│   │   │   └── bigquery.py
+│   │   ├── agents/
+│   │   │   ├── router_agent.py
+│   │   │   └── conversation_agent.py
+│   │   └── models/
+│   ├── requirements.txt
+│   └── .env.example
+├── frontend/
+│   ├── src/
+│   │   ├── App.jsx
+│   │   ├── main.jsx
+│   │   ├── components/
+│   │   │   ├── Sidebar.jsx
+│   │   │   ├── ChatWindow.jsx
+│   │   │   ├── MessageBubble.jsx
+│   │   │   └── ChatInput.jsx
+│   │   ├── services/
+│   │   │   └── api.js
+│   │   └── styles/
+│   │       └── theme.css
+│   ├── package.json
+│   └── vite.config.js
+├── .gitignore
+└── README.md
+```
+
+Adjust the structure if necessary, but keep responsibilities separate.
+
+---
+
+### 13. Dependencies and maintainability
+
+Use the smallest reasonable dependency set.
+
+Pin or constrain dependencies where appropriate.
+
+Avoid unnecessary packages that increase maintenance or security risk.
+
+Keep Google Cloud calls on the backend.
+
+Keep all secrets out of the frontend.
+
+Use readable names and clear error handling.
+
+Do not build a complicated agent framework in this first milestone.
+
+Do not create placeholder implementations that pretend to provide functionality they do not implement.
+
+---
+
+### 14. Validation and security checks
+
+Before declaring completion, run and report the actual results of these tests.
+
+**Backend**
+1. Backend starts successfully.
+2. Health endpoint returns a healthy response.
+3. API request validation works.
+4. Invalid conversation IDs return appropriate errors.
+5. Chat messages persist in SQLite.
+6. Conversation retrieval works.
+7. Conversation deletion works.
+8. Logs and errors do not expose secrets.
+
+**Frontend**
+9. Frontend builds successfully.
+10. Frontend communicates with FastAPI.
+11. A user can send a message and receive a response.
+12. New Chat creates a separate conversation.
+13. Refresh restores conversation history.
+14. Older conversations can be reopened.
+15. Loading and error states work.
+16. No significant browser console errors remain.
+
+**BigQuery**
+17. Connection diagnostic uses actual Google Cloud authentication.
+18. The diagnostic attempts a real read-only metadata request.
+19. Successful access is reported only after the request succeeds.
+20. Missing credentials and permission failures are handled safely.
+21. No company records are returned by the diagnostic.
+22. No credentials or secrets appear in logs or API responses.
+
+**Security**
+23. `.env` and credential files are ignored by Git.
+24. `.env.example` contains placeholders only.
+25. No secrets are hard-coded in source.
+26. No wildcard credentialed CORS is configured.
+27. No company data is sent to Vertex AI.
+28. No arbitrary SQL is executed.
+29. No external telemetry or data-upload service is introduced.
+30. All tests that were not run are explicitly marked as not tested.
+
+Do not claim a test passed unless it was actually executed.
+
+---
+
+### 15. Deliverables
+
+Provide:
+
+- Complete backend source.
+- Complete frontend source.
+- Requirements file.
+- Package configuration.
+- Environment-variable template.
+- Git ignore rules.
+- Database initialization.
+- README with exact startup instructions.
+- BigQuery connection diagnostic instructions.
+- List of implemented features.
+- List of limitations.
+- Actual test results.
+
+The project must run in Google Cloud Shell using the existing supported Python and Node versions.
+
+Do not overwrite the existing project or its environment files without explicit authorization. If the existing project contains useful configuration, inspect and preserve it.
+
+---
+
+### 16. Final acceptance criteria
+
+The milestone is complete when:
+
+- The application has a polished enterprise chat UI.
+- Basic chat interaction works.
+- Conversations persist in SQLite.
+- Existing conversations can be reopened.
+- The frontend and backend work together.
+- The application starts even if BigQuery is temporarily unavailable.
+- BigQuery connection verification uses real credentials and real metadata access.
+- Failure is reported honestly and safely.
+- No company data is sent to Gemini in this milestone.
+- No secrets are exposed in the browser, source code, logs, or repository.
+- The application is ready for the next milestone: improving intent understanding and answer quality.
+
+Build only this milestone. Do not add the full dashboard system, persona setup, RAG, or AI-generated analytics yet. Those will be implemented and tested in subsequent steps.
