@@ -1,1 +1,15 @@
 git clone -b step1-foundation https://github.com/nayanav18/AI-initiative.git enterprise-analytics-ai
+
+
+cd enterprise-analytics-ai
+
+# 1. Setup Backend (.env already template-ready)
+cd backend
+cp .env.example .env
+pip install -r requirements.txt
+uvicorn app.main:app --port 8000 --reload
+
+# 2. Setup Frontend (in a new terminal)
+cd ../frontend
+npm install
+npm run dev
