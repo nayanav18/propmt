@@ -1,0 +1,256 @@
+# STEP 2 — BigQuery Schema Discovery for Enterprise Analytics AI
+
+## 1. Project context
+
+I have completed Step 1 of my Enterprise Analytics AI application. The application is running, the chatbot UI is working, SQLite conversation persistence is implemented, and the BigQuery connection diagnostic reports successful read-only metadata access.
+
+Now implement **Step 2: BigQuery Schema Discovery**.
+
+Do not rebuild the application from scratch. Inspect the existing codebase first, understand its architecture, and extend the current implementation with minimal, well-structured changes.
+
+## 2. Preserve the existing configuration
+
+Use the existing configuration and authentication method already implemented in the project.
+
+The configured, non-secret BigQuery settings are:
+
+- GCP project ID: `vf-grp-gbissdbx-dev-1`
+- GCP location: `us-central1`
+- BigQuery dataset: `KarthikRudrapati`
+- BigQuery dataset location: `US`
+- Vertex AI model configuration reserved for later: `gemini-2.5-flash-lite`
+- Vertex AI temperature: `0.2`
+- Vertex AI maximum output tokens: `2048`
+
+Do not create, rename, replace, or silently switch to another GCP project or dataset.
+
+Read configuration from the existing environment/configuration system. Do not hard-code credentials or duplicate configuration unnecessarily.
+
+Do not overwrite the existing `.env` file or change the established authentication method. If a setting is missing, report it clearly and use the project's existing configuration conventions.
+
+## 3. Technology constraints
+
+Continue using the existing stack:
+
+- Frontend: React, Vite, JavaScript and CSS.
+- Backend: Python 3.12, FastAPI, Uvicorn and Pydantic.
+- Data source: Google Cloud BigQuery.
+- Application persistence: existing SQLite implementation.
+- Google Cloud authentication: existing secure authentication method and Application Default Credentials where applicable.
+
+**Do not use PHP.**
+
+Do not introduce a new framework, vector database, external database, unnecessary cloud service, or additional AI provider for this milestone.
+
+Do not call Vertex AI or Gemini yet. Do not implement RAG, embeddings, AI-generated SQL, dashboard generation, or business-data analysis in Step 2.
+
+## 4. Backend: discover the real BigQuery schema
+
+Implement a clean, reusable backend service that discovers the schema of the configured dataset.
+
+The service must:
+
+1. Verify that the configured GCP project and dataset are accessible.
+2. List the actual tables and views visible to the application's existing BigQuery identity.
+3. Retrieve column metadata for each accessible table or view.
+4. Include, where available:
+   - Table or view name.
+   - Fully qualified table identifier.
+   - Object type, such as table or view.
+   - Column name.
+   - BigQuery data type.
+   - Column mode or nullability.
+   - Description, when available.
+   - Partitioning information, when available.
+   - Clustering information, when available.
+5. Handle nested and repeated fields appropriately if they exist.
+6. Distinguish an empty dataset from a permission error, invalid configuration, or API failure.
+7. Use appropriate timeouts, safe error handling and bounded responses.
+8. Avoid unnecessary repeated API requests. Use a reasonable cache or refresh mechanism if it fits the existing architecture.
+9. Provide a way to refresh the discovered schema so changes in BigQuery can be reflected.
+
+Use the official BigQuery client and metadata APIs already available in the project. Prefer metadata operations and `INFORMATION_SCHEMA` queries when appropriate.
+
+Do not scan business tables or retrieve customer, revenue, transaction, or other business records merely to discover the schema.
+
+Do not assume that the dataset contains particular tables or columns. Discover everything from the actual configured dataset.
+
+## 5. Backend API
+
+Add or extend the following endpoints using the project's existing API conventions.
+
+### A. Schema summary
+
+`GET /api/system/bigquery-schema`
+
+Return a structured response containing:
+
+- Connection and metadata-discovery status.
+- Configured project ID and dataset ID.
+- Dataset location.
+- Discovery timestamp in UTC.
+- Number of discovered tables and views.
+- Number of discovered columns.
+- Actual table and view names.
+- Column metadata, grouped by table.
+- A safe error code and message if discovery fails.
+
+Do not return credentials, tokens, environment dumps, or sensitive internal exception details.
+
+### B. Refresh schema
+
+`POST /api/system/bigquery-schema/refresh`
+
+Perform a fresh metadata discovery and return the updated schema summary.
+
+Keep this endpoint read-only with respect to BigQuery data and schema. Refreshing must never create, update, or delete BigQuery objects.
+
+### C. Existing diagnostic
+
+Preserve the existing BigQuery connection diagnostic and its UI.
+
+Where possible, extend it to distinguish:
+
+- Authentication/configuration verified.
+- Dataset metadata access verified.
+- Schema discovery completed.
+- Last successful discovery time.
+- Number of tables and views discovered.
+
+Do not claim that schema discovery succeeded until the actual metadata request succeeds.
+
+Keep the existing `/health` and all working Step 1 endpoints operational.
+
+Use suitable HTTP status codes and the project's existing response conventions.
+
+## 6. Frontend: make schema information visible
+
+Extend the existing React application without redesigning or removing the working chatbot.
+
+Add a polished **Dataset Explorer** or **BigQuery Schema** section that fits the current dark Vodafone-inspired design.
+
+Preserve the existing colors and visual language, including:
+
+- Background: `#050a12`
+- Sidebar: `#071321`
+- Section background: `#0d1626`
+- Card background: `#1b263c`
+- Vodafone red: `#e60000`
+- Magenta: `#d50072`
+- Purple: `#9138da`
+- Cyan: `#00d8ff`
+- Primary text: `#ffffff`
+- Secondary text: `#8ba8d1`
+
+The interface should include:
+
+1. A dataset overview showing the configured project, dataset, and location.
+2. Small summary cards for table count, view count, and column count.
+3. A searchable list of discovered tables and views.
+4. A table detail panel showing the actual column names, types, modes, and available descriptions.
+5. Loading, empty, error, and successful states.
+6. A Refresh Schema button connected to the actual refresh API.
+7. A last-refreshed timestamp.
+8. Clear error messages when the dataset cannot be inspected.
+9. A responsive layout that remains usable on smaller screens.
+
+Use real API responses only. Do not insert sample tables, fabricated columns, hard-coded row counts, or mock schema data into the production UI.
+
+If there are no tables, show a genuine empty state rather than inventing examples.
+
+Avoid excessive animation and unnecessary visual clutter. Reuse the current component and styling conventions where practical.
+
+## 7. Connect the chatbot to verified metadata
+
+The chatbot should be able to answer basic questions about the schema, such as:
+
+- "What dataset is connected?"
+- "Which tables and views are available?"
+- "What columns exist in this table?"
+- "Which tables contain a column with this name?"
+- "What data types do these columns use?"
+
+Implement these as **deterministic, metadata-grounded answers** using the schema retrieved from BigQuery.
+
+Use the actual discovered metadata, not predefined answers.
+
+For table- or column-specific questions, state the relevant table names and column details accurately. If a table or column does not exist in the discovered schema, say that it was not found.
+
+If discovery has not completed or the metadata is stale or unavailable, communicate that limitation clearly and offer a refresh. Never pretend to know the schema.
+
+Do not use Gemini, embeddings, RAG, business-data SQL, or numerical business analysis for these questions in this milestone.
+
+Preserve the existing conversation history and persistence behavior.
+
+## 8. Security requirements
+
+This application handles company data. Security is mandatory.
+
+- Keep all Google Cloud calls and credentials in the Python backend.
+- Never expose service-account keys, passwords, API keys, OAuth tokens, or other secrets to the frontend.
+- Never print credentials, environment variables, or tokens in logs.
+- Never commit `.env`, credential files, private keys, or confidential SQLite databases.
+- Preserve appropriate `.gitignore` rules.
+- Use the existing secure authentication method.
+- Apply authorization checks if the application already has authentication and user permissions.
+- Do not add wildcard credentialed CORS.
+- Validate requests and limit response sizes.
+- Return safe, structured errors rather than raw stack traces.
+- Do not send schema metadata to any external AI provider.
+- Do not read business rows or execute arbitrary SQL.
+- Do not weaken permissions or request broader IAM access merely to make the feature work.
+- Do not change or disable existing authentication and security controls.
+
+Schema metadata itself may reveal sensitive business information. Return only the metadata the current user is authorized to see.
+
+## 9. Code quality and compatibility
+
+- Inspect existing files before editing.
+- Reuse existing BigQuery clients, configuration modules, API routers, and error-handling utilities where appropriate.
+- Avoid duplicating connection logic.
+- Keep the code modular and readable.
+- Add type annotations where useful.
+- Keep dependencies minimal.
+- Do not replace working functionality unnecessarily.
+- Do not remove or rewrite Step 1 components just to implement Step 2.
+- Do not introduce unrelated features or refactor the entire codebase.
+
+## 10. Testing requirements
+
+Run actual tests and report their results.
+
+At minimum, verify:
+
+1. The backend starts successfully.
+2. The frontend builds successfully.
+3. Existing Step 1 endpoints still work.
+4. Schema discovery returns real metadata when BigQuery access is available.
+5. The configured project and dataset are used.
+6. A dataset with no visible tables is handled correctly.
+7. Permission errors and unavailable APIs are handled safely.
+8. Refresh performs a new metadata discovery.
+9. Chatbot schema questions use discovered metadata.
+10. Unknown table and column names do not produce fabricated answers.
+11. The application does not retrieve business rows during schema discovery.
+12. No secrets are exposed in API responses or logs.
+
+Use mocked BigQuery responses only in isolated unit tests where appropriate. Do not use mocked responses to claim that the real cloud connection succeeded.
+
+If a real-cloud test cannot run because credentials, permissions, or network access are unavailable, report that explicitly rather than claiming it passed.
+
+## 11. Completion report
+
+When implementation is complete, report:
+
+- Files created or modified.
+- APIs added or changed.
+- Whether actual BigQuery schema discovery succeeded.
+- The actual number of tables, views, and columns discovered, if available.
+- Which tests passed and failed.
+- Any remaining blockers.
+- Exact commands to start the backend and frontend.
+- How I can open the Dataset Explorer and verify the results.
+
+Do not begin Step 3 automatically.
+
+**Stop after Step 2. Wait for me to test the application and share the results before proposing or implementing RAG, Gemini integration, or SQL-based business analytics.**
